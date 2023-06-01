@@ -1,30 +1,31 @@
-let http = require('http');
+const express = require('express');
 const path = require('path');
-const fs = require('fs');
 
-http.createServer(function (req, res) {
-    sendResponse(req.url, res);
-  }).listen(8080);
+const app = express();
+const port = 3000;
 
+app.use((req, res, next) => {
+    console.log('request received');
+    console.log(req.originalUrl);
+    next();
+});
 
-function sendResponse(pageName, res) {
-    const pathToFile = path.join(__dirname, `pages${pageName}.html`);
-    fs.readFile(pathToFile, 'utf8' , (err, data) => {
-        if (err) {
-            fs.readFile(path.join(__dirname, `pages/404.html`), 'utf8', (err, data) => {
-                if (err) {
-                    console.error(err);
-                    res.writeHead(500, {'Content-Type': 'text/plain'});
-                    res.end("An error occurred while trying to load the page");
-                    return;
-                } else {
-                    res.writeHead(200, {'Content-Type': 'text/html'});
-                    res.end(data);
-                }
-            });
-        } else {
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            res.end(data);
-        }
-    });
-}
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, '/pages/about-me.html'))
+});
+
+app.get('/contact', (req, res) => {
+    res.sendFile(path.join(__dirname, '/pages/contact.html'))
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '/pages/index.html'))
+});
+
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, '/pages/404.html'));
+})
+
+app.listen(port, function () {
+    console.log(`Example app listening on port ${port}!`);
+  });
